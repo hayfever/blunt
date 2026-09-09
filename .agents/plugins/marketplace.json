@@ -1,0 +1,21 @@
+{
+  "name": "blunt",
+  "interface": {
+    "displayName": "Blunt"
+  },
+  "plugins": [
+    {
+      "name": "blunt",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/hayfever/blunt.git",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

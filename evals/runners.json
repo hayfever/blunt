@@ -1,0 +1,33 @@
+{
+  "claude": {
+    "command": [
+      "claude",
+      "--disable-slash-commands",
+      "--print",
+      "--output-format",
+      "json",
+      "--no-session-persistence",
+      "--setting-sources",
+      "",
+      "--tools",
+      ""
+    ],
+    "response_format": "claude-json"
+  },
+  "omp": {
+    "command": [
+      "omp",
+      "-p",
+      "--profile",
+      "eval-iso",
+      "--no-session",
+      "--no-tools",
+      "--no-rules",
+      "--no-skills",
+      "--no-extensions",
+      "--model",
+      "glm-5.3-flash:cloud"
+    ],
+    "response_format": "text"
+  }
+}

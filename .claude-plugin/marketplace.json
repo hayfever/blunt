@@ -1,0 +1,16 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "blunt",
+  "description": "Action-first, human, plain output for Claude Code and OMP. ADHD-friendly shape, no AI tells, Simplified Technical English.",
+  "owner": {
+    "name": "Hayden Luckenbach"
+  },
+  "plugins": [
+    {
+      "name": "blunt",
+      "description": "Action-first output shaping: ADHD-friendly structure, de-AI-ed prose, plain technical English.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

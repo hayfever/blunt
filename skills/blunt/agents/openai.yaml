@@ -1,0 +1,7 @@
+interface:
+  display_name: "Blunt"
+  short_description: "Action-first, human, plain output"
+  default_prompt: "Use $blunt to make this response action-first and easy to execute."
+
+policy:
+  allow_implicit_invocation: false

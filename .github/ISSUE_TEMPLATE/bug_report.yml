@@ -1,0 +1,50 @@
+name: Bug report
+description: The skill did not load, activate, or shape output as documented
+labels: ["bug"]
+body:
+  - type: input
+    id: runtime
+    attributes:
+      label: Agent and runtime
+      description: "For example: Claude Code 2.1.142 on Linux, or OMP v18 on Windows."
+    validations:
+      required: true
+  - type: dropdown
+    id: install-route
+    attributes:
+      label: Install route
+      options:
+        - claude plugin marketplace add
+        - codex plugin marketplace add
+        - omp plugin marketplace add
+        - pi install
+        - agy plugin install
+        - qwen extensions install
+        - gemini extensions install / command
+        - npx skills add
+        - hermes skills install
+        - Kimi /plugins
+        - zed skill from URL
+        - folder copy
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Installed version
+      description: "Output of your runtime's plugin or skill list command."
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened
+      description: "The exact behavior, including any output you can share."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true

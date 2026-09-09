@@ -1,0 +1,96 @@
+name: Validate
+
+# Full structural gate: package consistency, unit tests, runtime load checks.
+# Installs the Claude Code CLI and the Pi runtime from npm, so everything here
+# runs without model credentials.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Package consistency
+        run: python3 scripts/validate-package.py
+      - name: Manifest syntax
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 -c "import json,glob;[json.load(open(p)) for p in glob.glob('**/*.json',recursive=True)];print('json ok')"
+          python3 -c "import yaml;yaml.safe_load(open('skills/blunt/agents/openai.yaml'));print('yaml ok')"
+          python3 -c "import tomllib;tomllib.load(open('skills/blunt/agents/gemini.toml','rb'));print('toml ok')"
+      - name: Hook script syntax
+        run: |
+          node --check hooks/always-on.mjs
+          node --check .opencode/plugins/blunt.mjs
+      - name: Extension transpiles
+        run: |
+          bun build extensions/blunt.ts --target=bun \
+            --external '@earendil-works/pi-coding-agent' \
+            --outfile "$RUNNER_TEMP/blunt.js"
+      - name: context-compat unit tests (bun)
+        run: bun test tests/context_compat.test.ts
+
+  claude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate manifests
+        run: claude plugin validate . --strict
+
+  pi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Pi
+        run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+      - name: Extension RPC smoke test (no model request)
+        run: python3 scripts/check_extension.py --runtime pi

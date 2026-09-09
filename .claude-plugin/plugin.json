@@ -1,0 +1,9 @@
+{
+  "name": "blunt",
+  "version": "1.0.0",
+  "description": "Shape output for an ADHD reader, strip AI tells, and write plain Simplified Technical English: lead with the next action, number steps, suppress tangents, restate state, make wins visible.",
+  "author": {
+    "name": "Hayden Luckenbach",
+    "url": "https://github.com/hayfever"
+  }
+}

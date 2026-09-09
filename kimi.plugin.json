@@ -1,0 +1,12 @@
+{
+  "name": "blunt",
+  "version": "1.0.0",
+  "description": "One output style: lead with the next action (ADHD-friendly), strip AI tells from prose, write technical text in plain Simplified Technical English.",
+  "license": "MIT",
+  "homepage": "https://github.com/hayfever/blunt",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Blunt",
+    "shortDescription": "Action-first, human, plain output for Kimi Code CLI"
+  }
+}

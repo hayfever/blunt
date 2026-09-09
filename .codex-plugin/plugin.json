@@ -1,0 +1,39 @@
+{
+  "name": "blunt",
+  "version": "1.0.0",
+  "description": "Blunt output for Codex: action first, numbered steps, no AI tells, plain Simplified Technical English, and visible progress.",
+  "author": {
+    "name": "Hayden Luckenbach",
+    "url": "https://github.com/hayfever"
+  },
+  "homepage": "https://github.com/hayfever/blunt",
+  "repository": "https://github.com/hayfever/blunt",
+  "license": "MIT",
+  "keywords": [
+    "adhd",
+    "output-style",
+    "plain-english",
+    "simplified-technical-english",
+    "productivity",
+    "skills",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Blunt",
+    "shortDescription": "Action-first, human, plain output",
+    "longDescription": "Shape Codex responses for an ADHD reader by leading with the next action, numbering multi-step work, suppressing tangents, restating state, and making progress visible. Strip AI writing tells from all prose and write technical text in plain Simplified Technical English.",
+    "developerName": "Hayden Luckenbach",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "websiteURL": "https://github.com/hayfever/blunt",
+    "defaultPrompt": [
+      "Use blunt for this task.",
+      "Make this answer action-first and easy to execute.",
+      "Rewrite this text without AI tells, in plain English."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

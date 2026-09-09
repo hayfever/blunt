@@ -1,0 +1,31 @@
+name: Feature request
+description: A new rule, tell, plain-English rule, or agent integration
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of proposal
+      options:
+        - New AI tell (the tells part)
+        - New Simplified Technical English rule
+        - Change to a shape rule (Part 1)
+        - New agent integration
+        - Test harness or eval improvement
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: "A real example of the problem text, or the agent documentation for the integration. The skill has a 400-line budget, so name what your proposal replaces, not only what it adds."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed rule or change
+      description: "Worded the way you would want it to appear in skills/blunt/SKILL.md."
+    validations:
+      required: true

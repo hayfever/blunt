@@ -1,0 +1,90 @@
+name: Evals
+
+# Paired response-quality evaluation: baseline (no skill) versus candidate
+# (skills/blunt/SKILL.md injected). Costs API spend, so it runs on demand only.
+# Requires the ANTHROPIC_API_KEY repository secret for the claude runner.
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Model runner
+        type: choice
+        options: [claude]
+        default: claude
+      trials:
+        description: Trials per case per condition
+        required: true
+        default: "1"
+      budget:
+        description: USD budget cap for the run
+        required: true
+        default: "10"
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Run baseline condition
+        run: |
+          python3 scripts/run_evals.py run \
+            --runner "${{ inputs.runner }}" \
+            --condition baseline \
+            --trials "${{ inputs.trials }}" \
+            --budget-usd "${{ inputs.budget }}" \
+            --output evals/results/responses.jsonl
+      - name: Run candidate condition
+        run: |
+          python3 scripts/run_evals.py run \
+            --runner "${{ inputs.runner }}" \
+            --condition candidate \
+            --condition-skill skills/blunt/SKILL.md \
+            --trials "${{ inputs.trials }}" \
+            --budget-usd "${{ inputs.budget }}" \
+            --output evals/results/responses.jsonl
+      - name: Blind judge
+        run: |
+          python3 scripts/judge.py \
+            --responses evals/results/responses.jsonl \
+            --runner "${{ inputs.runner }}" \
+            --output evals/results/scores.jsonl
+      - name: Release gate
+        run: |
+          python3 scripts/run_evals.py score evals/results/scores.jsonl \
+            | tee evals/results/gate.json
+          python3 - <<'EOF'
+          import json, sys
+          gate = json.load(open("evals/results/gate.json"))
+          if not gate["release_gate"]["passed"]:
+              print("::error::release gate failed: " + "; ".join(gate["release_gate"]["reasons"]))
+              sys.exit(1)
+          print("release gate passed")
+          EOF
+      - name: Deterministic style check on candidate rows
+        run: |
+          python3 scripts/check_style.py evals/results/responses.jsonl \
+            --condition candidate \
+            --report evals/results/style.json \
+            --strict
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: evals/results/

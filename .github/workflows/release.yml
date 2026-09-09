@@ -1,0 +1,47 @@
+name: Release
+
+# Drafts a GitHub release from the matching CHANGELOG.md section when a v-tag
+# is pushed. Bump versions with scripts/bump-version.py first.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Validate the tagged tree
+        run: python3 scripts/validate-package.py
+      - name: Extract the changelog section
+        run: |
+          python3 - <<'EOF'
+          import os, re
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+          text = open("CHANGELOG.md", encoding="utf-8").read()
+          pattern = rf"(?ms)^## \[{re.escape(version)}\].*?\n(.*?)(?=^## \[|\Z)"
+          match = re.search(pattern, text)
+          if not match:
+              raise SystemExit(f"CHANGELOG.md has no section for {version}")
+          body = match.group(1).strip()
+          # Drop the trailing compare-link footer, which is repo noise.
+          body = re.sub(r"^\[[^\]]+\]: .*$", "", body, flags=re.MULTILINE).strip()
+          open("release-notes.md", "w", encoding="utf-8").write(body + "\n")
+          print(f"extracted {len(body)} characters for v{version}")
+          EOF
+      - name: Draft the release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          body_path: release-notes.md

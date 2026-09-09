@@ -1,0 +1,16 @@
+{
+  "name": "blunt",
+  "version": "1.0.0",
+  "description": "One output style: lead with the next action (ADHD-friendly), strip AI tells from prose, write technical text in plain Simplified Technical English.",
+  "license": "MIT",
+  "homepage": "https://github.com/hayfever/blunt",
+  "private": true,
+  "keywords": ["pi-package"],
+  "omp": {
+    "extensions": ["./extensions/blunt.ts"]
+  },
+  "pi": {
+    "extensions": ["./extensions/blunt.ts"],
+    "skills": ["./skills"]
+  }
+}

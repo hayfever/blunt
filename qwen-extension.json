@@ -1,0 +1,6 @@
+{
+  "name": "blunt",
+  "version": "1.0.0",
+  "description": "Blunt output for Qwen Code: action first, numbered steps, no AI tells, plain Simplified Technical English, and visible progress.",
+  "skills": "skills"
+}
