@@ -481,7 +481,9 @@ Create `~/.pi/agent/blunt.json` in Pi's agent configuration directory:
 
 Read once at extension startup, so restart Pi after changing it. If `PI_CODING_AGENT_DIR` is set, put `.blunt-always` in that directory instead. Run `/reload` or start a new session after changing the flag.
 
-</details>
+### Status line placement
+
+Plain Pi renders extension statuses on their own footer line below the stats row, and truncates with an ellipsis on overflow. There is no powerline `status` segment in Pi, so the separate line is the runtime's design; the same-line option above is OMP-only.
 
 <details>
 <summary><strong>Oh My Pi (OMP)</strong></summary>
@@ -494,6 +496,20 @@ omp plugin install --scope user blunt@blunt
 ```
 
 Start a new OMP session and run `/blunt` to toggle the mode. The footer shows `● BLUNT ON` while the mode is active.
+
+### Same-line status (optional)
+
+By default OMP renders extension statuses on their own line below the powerline. To render `● BLUNT ON` inline with the other powerline modules, add the `status` segment to the status line and turn the below-line copy off in `~/.omp/agent/config.yml`:
+
+```yaml
+statusLine:
+  preset: custom
+  leftSegments: [pi, model, mode, path, git, status, context_pct, cost]
+  rightSegments: [session_name]
+  showHookStatus: false
+```
+
+Keep `showHookStatus: false` only when `status` is in a segment, or the status shows twice. The status line truncates on overflow rather than wrapping; a single `● BLUNT ON` always fits.
 
 ### Update
 
