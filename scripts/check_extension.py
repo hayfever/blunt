@@ -396,6 +396,32 @@ export default function (pi: ExtensionAPI) {
         finally:
             client.close()
 
+        # 1.1.0: the stop phrase above persisted the OFF choice. Verify the
+        # preference file and that a fresh session starts OFF without flags.
+        persisted_config = json.loads(
+            Path(agent_dir, "blunt.json").read_text(encoding="utf8")
+        )
+        assert persisted_config.get("enabled") is False
+
+        persisted_off = RpcClient(executable, env, "--no-session", *extension_args)
+        try:
+            _, persisted_off_events = persisted_off.request(
+                "persisted-off", {"type": "get_state"},
+            )
+            assert not any(
+                "BLUNT ON" in (text or "")
+                for text in status_texts(persisted_off_events)
+            )
+            entries, _ = persisted_off.request(
+                "entries-persisted-off", {"type": "get_entries"},
+            )
+            assert message_count(entries, "blunt-rules") == 0
+        finally:
+            persisted_off.close()
+
+        # The legacy always-on flag still forces ON once the persisted
+        # preference is cleared.
+        Path(agent_dir, "blunt.json").unlink(missing_ok=True)
         Path(agent_dir, ".blunt-always").touch()
         always_on = RpcClient(
             executable,
@@ -414,6 +440,27 @@ export default function (pi: ExtensionAPI) {
             )
         finally:
             always_on.close()
+
+        # The persisted ON choice restores in a fresh session with no flags.
+        Path(agent_dir, ".blunt-always").unlink(missing_ok=True)
+        Path(agent_dir, "blunt.json").write_text(
+            json.dumps({"enabled": True}), encoding="utf8",
+        )
+        persisted_on = RpcClient(executable, env, "--no-session", *extension_args)
+        try:
+            _, persisted_on_events = persisted_on.request(
+                "persisted-on", {"type": "get_state"},
+            )
+            assert any(
+                "BLUNT ON" in (text or "")
+                for text in status_texts(persisted_on_events)
+            )
+            entries, _ = persisted_on.request(
+                "entries-persisted-on", {"type": "get_entries"},
+            )
+            assert message_count(entries, "blunt-rules") == 1
+        finally:
+            persisted_on.close()
 
     print(f"{args.runtime} extension smoke test passed")
 
