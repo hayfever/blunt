@@ -2,6 +2,17 @@
 
 All notable changes to blunt are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org).
 
+## [1.1.0] - 2026-09-16
+
+### Added
+
+- Persisted `/blunt` preference: every toggle (`/blunt`, `/blunt on|off`, `stop blunt mode`) writes the choice to the agent config, so future OMP and Pi sessions start in the same mode without re-running the command. A session's own history and `--blunt` still win for the current run.
+
+### Changed
+
+- `stop blunt mode` and `normal mode` now persist the OFF choice too: earlier 1.0.0 sessions forgot the mode between sessions; 1.1.0 remembers it until you run `/blunt` again.
+- `/blunt` command description and mode notifications now state the persisted behavior.
+
 ## [1.0.0] - 2026-09-09
 
 ### Added
@@ -13,4 +24,5 @@ All notable changes to blunt are documented here. The format follows [Keep a Cha
 - Test harness: package consistency validator, cross-runtime unit tests, extension RPC smoke tests with no model calls, paired baseline-vs-candidate evals with a blind judge and release gate, and a deterministic style linter.
 - GitHub Actions: `validate.yml` on every push and pull request, `evals.yml` on manual dispatch.
 
+[1.1.0]: https://github.com/hayfever/blunt/releases/tag/v1.1.0
 [1.0.0]: https://github.com/hayfever/blunt/releases/tag/v1.0.0

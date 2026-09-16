@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -29,7 +29,7 @@ const STOP_PHRASES: Record<string, true> = {
   "normal mode": true,
 };
 const RULES_HEADER =
-  'BLUNT MODE ACTIVE. The ruleset below applies to every response until turned off. "stop blunt mode" or "normal mode" turns it off for this session.';
+  'BLUNT MODE ACTIVE. The ruleset below applies to every response until turned off. "stop blunt mode" or "normal mode" turns it off for this session and future sessions. Run /blunt to switch it back on.';
 const DISABLED_NOTICE =
   "BLUNT MODE OFF. Ignore the blunt ruleset injected earlier in this conversation and return to your default response style.";
 
@@ -40,15 +40,37 @@ type BluntModeState = {
 type BluntConfig = {
   alwaysOn?: boolean;
   hideStatus?: boolean;
+  /**
+   * Persisted toggle state. /blunt and the stop phrases write it so the
+   * choice carries to future sessions; it outranks the legacy always-on
+   * defaults but not a session's own saved state.
+   */
+  enabled?: boolean;
 };
 
 function loadConfig(): BluntConfig {
   try {
-    return JSON.parse(
-      readFileSync(join(getAgentDir(), "blunt.json"), "utf8"),
-    );
+    return JSON.parse(readFileSync(join(getAgentDir(), "blunt.json"), "utf8"));
   } catch {
     return {};
+  }
+}
+
+/**
+ * Write the toggle choice so future sessions start in the same mode.
+ * Returns false when the preference file cannot be written.
+ */
+function persistState(nextEnabled: boolean): boolean {
+  const merged: BluntConfig = { ...loadConfig(), enabled: nextEnabled };
+  try {
+    writeFileSync(
+      join(getAgentDir(), "blunt.json"),
+      `${JSON.stringify(merged, null, 2)}\n`,
+      "utf8",
+    );
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -163,12 +185,18 @@ export default function bluntExtension(pi: ExtensionAPI) {
 
   const restoreState = (ctx: ExtensionContext): void => {
     const savedState = getSavedState(ctx);
-    const enabledByDefault =
-      pi.getFlag("blunt") === true ||
-      config.alwaysOn === true ||
-      existsSync(alwaysOnFlag);
+    const cliFlag = pi.getFlag("blunt") === true;
+    const persisted = loadConfig().enabled;
+    const enabledByDefault = config.alwaysOn === true || existsSync(alwaysOnFlag);
 
-    enabled = savedState ?? enabledByDefault;
+    // A session's own history wins, then the persisted toggle, then the
+    // launch-time defaults. --blunt keeps force-on semantics for that run.
+    const defaultForSession = cliFlag
+      ? true
+      : typeof persisted === "boolean"
+        ? persisted
+        : enabledByDefault;
+    enabled = savedState ?? defaultForSession;
     updateStatus(ctx);
     syncContext(ctx);
   };
@@ -176,9 +204,20 @@ export default function bluntExtension(pi: ExtensionAPI) {
   const setEnabled = (nextEnabled: boolean, ctx: ExtensionContext): void => {
     enabled = nextEnabled;
     pi.appendEntry(STATE_ENTRY_TYPE, { enabled } satisfies BluntModeState);
+
+    if (!persistState(nextEnabled)) {
+      ctx.ui.notify(
+        "Could not save the blunt preference; this toggle is session-only.",
+        "warning",
+      );
+    }
+
     updateStatus(ctx);
     syncContext(ctx);
-    ctx.ui.notify(`Blunt mode ${enabled ? "enabled" : "disabled"}`, "info");
+    ctx.ui.notify(
+      `Blunt mode ${enabled ? "enabled" : "disabled"} (saved for future sessions)`,
+      "info",
+    );
   };
 
   pi.registerFlag("blunt", {
@@ -188,7 +227,7 @@ export default function bluntExtension(pi: ExtensionAPI) {
   });
 
   pi.registerCommand("blunt", {
-    description: "Toggle blunt output for this session",
+    description: "Toggle blunt output (persists across sessions)",
     handler: async (args, ctx) => {
       const argument = args.trim().toLowerCase();
 
