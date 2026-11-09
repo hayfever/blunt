@@ -2,7 +2,7 @@
 """Smoke-test the Pi or OMP extension without making a model request.
 
 Drives the agent in RPC mode; no model request is made. Third-party
-attribution: LICENSE."""
+attribution: THIRD_PARTY_NOTICES.md."""
 
 
 from __future__ import annotations

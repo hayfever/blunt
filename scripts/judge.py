@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Blind-judge paired evaluation responses and emit scorable rows.
 
-Responses get opaque labels before grading; third-party attribution: LICENSE."""
+Responses get opaque labels before grading; third-party attribution: THIRD_PARTY_NOTICES.md."""
 
 
 import argparse

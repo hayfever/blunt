@@ -2,7 +2,7 @@
 """Validate, run, and score paired response-quality evaluations.
 
 Conditions are paired (baseline vs candidate) and judged blind. The default
-runner config is evals/runners.json. Third-party attribution: LICENSE."""
+runner config is evals/runners.json. Third-party attribution: THIRD_PARTY_NOTICES.md."""
 
 
 import argparse
