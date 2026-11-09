@@ -77,4 +77,4 @@ Restart Claude Code, then re-invoke `/blunt`.
 
 ## License
 
-MIT.
+MIT. Third-party notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
